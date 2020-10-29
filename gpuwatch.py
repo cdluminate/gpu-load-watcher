@@ -26,22 +26,24 @@ import sys
 import time
 
 
-__DB__ = '/var/log/__gpuwatch__.db' if os.getuid() == 0 else '__gpuwatch__.db'
-if not os.path.exists(__DB__):
-    conn = sqlite3.connect(__DB__)
-    c = conn.cursor()
-    c.execute(
-        '''CREATE TABLE userwatch (time real, name text, processes inteter, vmem_occupy real)''')
-    c.execute(
-        '''CREATE TABLE gpuwatch (time real, gpu_util real, vmem_ratio real)''')
-    conn.commit()
-    conn.close()
+def __create_db_if_not_exist():
+    __DB__ = '/var/log/__gpuwatch__.db' if os.getuid() == 0 else '__gpuwatch__.db'
+    if not os.path.exists(__DB__):
+        conn = sqlite3.connect(__DB__)
+        c = conn.cursor()
+        c.execute(
+            '''CREATE TABLE userwatch (time real, name text, processes inteter, vmem_occupy real)''')
+        c.execute(
+            '''CREATE TABLE gpuwatch (time real, gpu_util real, vmem_ratio real)''')
+        conn.commit()
+        conn.close()
 
 
 def main_snapshot(argv):
     '''
     Record the current gpustat data into the database
     '''
+    __create_db_if_not_exist()
     ag = argparse.ArgumentParser()
     ag.add_argument('-B', '--db', type=str, default=__DB__)
     ag = ag.parse_args(argv)
@@ -76,6 +78,7 @@ def main_stat(argv):
     '''
     Print statistics by inspecting the database
     '''
+    __create_db_if_not_exist()
     ag = argparse.ArgumentParser()
     ag.add_argument('-B', '--db', type=str, default=__DB__)
     ag.add_argument('-s', '--span', type=str, default='day',
@@ -163,7 +166,12 @@ def main_svgreduce(argv):
     '''
     reduce the svg files into a single PDF file
     '''
-    svgfiles = glob.glob('*_gpuwatch.svg', recursive=True)
+    ag = argparse.ArgumentParser()
+    ag.add_argument('-g', '--glob', type=str, default='*_gpuwatch.svg')
+    ag.add_argument('-o', '--output', type=str, default='svgreduce.pdf')
+    ag = ag.parse_args(argv)
+
+    svgfiles = glob.glob(ag.glob, recursive=True)
     pdfs = []
     for svg in svgfiles:
         print(f'Converting {svg} into PDF using inkscape ...')
@@ -180,7 +188,7 @@ def main_svgreduce(argv):
     for reader in map(PdfFileReader, input_streams):
         for n in range(reader.getNumPages()):
             writer.addPage(reader.getPage(n))
-    with open('svgreduce.pdf', 'wb') as finalpdf:
+    with open(ag.output, 'wb') as finalpdf:
         writer.write(finalpdf)
     for f in input_streams:
         f.close()
