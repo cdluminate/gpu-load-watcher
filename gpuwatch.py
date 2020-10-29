@@ -119,6 +119,8 @@ def main_stat(argv):
         import numpy as np
         date_fmt = '%y-%m-%d %H:%M:%S'
         date_formatter = lab.matplotlib.dates.DateFormatter(date_fmt)
+        # offset the timezone to UTC+8
+        stamps = [x + 3600*8 for x in stamps]
 
         fig, ax = lab.subplots()
         a = [float(x) for x in gpuwatch['gpu_util']]
@@ -128,14 +130,14 @@ def main_stat(argv):
         ax.plot_date(t, a, 'r.-')
         ax.set(ylim=(0., 100.))
         ax.grid(True)
-        ax.legend(['gpu_util'])
+        ax.legend(['gpu_util'], loc='lower left')
         ax.xaxis.set_major_formatter(date_formatter)
 
         ax2 = ax.twinx()
         ax2.plot_date(t, b, 'b.-')
         ax2.set(ylim=(0., 1.))
         ax2.grid(True)
-        ax2.legend(['vram_ratio'])
+        ax2.legend(['vram_ratio'], loc='lower right')
         ax2.xaxis.set_major_formatter(date_formatter)
 
         fig.autofmt_xdate()
