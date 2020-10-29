@@ -11,19 +11,19 @@ Configuration:
 * * * * * lumin cd && /home/lumin/anaconda3/bin/python3 gpuwatch.py snapshot
 ```
 '''
-import os
-import sys
-import json
-import argparse
-import time
-import subprocess
-import glob
-import collections
-import re
 from termcolor import cprint, colored
+import argparse
+import collections
+import glob
 import json
+import json
+import os
+import re
 import sqlite3
 import statistics
+import subprocess
+import sys
+import time
 
 
 __DB__ = '/var/log/__gpuwatch__.db' if os.getuid() == 0 else '__gpuwatch__.db'
@@ -129,7 +129,7 @@ def main_stat(argv):
         a = [float(x) for x in gpuwatch['gpu_util']]
         b = [float(x) for x in gpuwatch['vram_ratio']]
         t = lab.matplotlib.dates.epoch2num(stamps)
-        lab.title(ag.plot_title + f'@ {time.ctime()}')
+        lab.title(ag.plot_title + f' @ {time.ctime()}')
 
         ax.plot_date(t, a, 'r.-')
         ax.set(ylim=(0., 100.))
@@ -147,6 +147,33 @@ def main_stat(argv):
         fig.autofmt_xdate()
         lab.savefig('gpuwatch.svg')
         cprint('Plot have been saved to gpuwatch.svg', 'yellow')
+
+
+def main_svgreduce(argv):
+    '''
+    reduce the svg files into a single PDF file
+    '''
+    svgfiles = glob.glob('*_gpuwatch.svg', recursive = True)
+    pdfs = []
+    for svg in svgfiles:
+        print(f'Converting {svg} into PDF using inkscape ...')
+        pdf = re.sub(r'\.svg$', '.pdf', svg)
+        os.system(f'inkscape -o {pdf} {svg}')
+        pdfs.append(pdf)
+    os.system('sync')
+
+    from PyPDF2 import PdfFileReader, PdfFileWriter
+    input_streams = []
+    for pdf in sorted(pdfs):
+        input_streams.append(open(pdf, 'rb'))
+    writer = PdfFileWriter()
+    for reader in map(PdfFileReader, input_streams):
+        for n in range(reader.getNumPages()):
+            writer.addPage(reader.getPage(n))
+    with open('svgreduce.pdf', 'wb') as finalpdf:
+        writer.write(finalpdf)
+    for f in input_streams:
+        f.close()
 
 
 if __name__ == '__main__':
