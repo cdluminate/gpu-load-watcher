@@ -49,7 +49,8 @@ need to destroy the sqlite3 database file after modifying the database tables).
 
 ## Installation and Configuration
 
-**Requirements:**: `pip install termcolor pylab numpy`. `ansible` is recommended.
+**Requirements:**: `pip install gpustat termcolor pylab numpy`. Utility `ansible` is strongly recommended. Besides,
+`ansible` is a mandatory requirement if you want to use the `Makefile` shipped in this repository.
 
 **Configuration:** Simply append one the following line to `/etc/crontab` with
 modified user name (see `crontab(5)` for details). If your system python3 version
