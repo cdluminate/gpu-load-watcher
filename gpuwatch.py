@@ -25,9 +25,10 @@ import subprocess
 import sys
 import time
 
+__DB__ = '/var/log/__gpuwatch__.db' if os.getuid() == 0 else '__gpuwatch__.db'
+
 
 def __create_db_if_not_exist():
-    __DB__ = '/var/log/__gpuwatch__.db' if os.getuid() == 0 else '__gpuwatch__.db'
     if not os.path.exists(__DB__):
         conn = sqlite3.connect(__DB__)
         c = conn.cursor()
