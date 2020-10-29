@@ -12,6 +12,9 @@ plot_week:
 
 fetch_svg:
 	ansible -i ~/svs.txt all -m fetch -a "src=~/gpuwatch.svg dest={{inventory_hostname}}_gpuwatch.svg flat=yes"
+	python3 gpuwatch.py svgreduce 2>/dev/null
+	@echo
+	@echo Check svgreduce.pdf for the gathered plots.
 
 fetch_db:
 	ansible -i ~/svs.txt all -m fetch -a "src=~/__gpuwatch__.db dest={{inventory_hostname}}_gpuwatch.db flat=yes"
