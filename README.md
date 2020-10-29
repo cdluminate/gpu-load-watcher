@@ -28,7 +28,7 @@ Utility to record and plot GPU usage of the deep learning server/workstation.
 
 * Plot the statistics for the past week and collect the result svg graphs. The following is an example graph.
 
-![svg](gpuwatch.svg)
+![svg](demo.svg)
 
 ```shell
 ~ ❯❯❯ ansible -i ~/svs.txt all -m shell -a '~/anaconda3/bin/python3 gpuwatch.py stat -s week --plot'

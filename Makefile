@@ -8,7 +8,7 @@ stat_day:
 	ansible -i ~/svs.txt all -m shell -a '~/anaconda3/bin/python3 gpuwatch.py stat -s day'
 
 plot_week:
-	ansible -i ~/svs.txt all -m shell -a '~/anaconda3/bin/python3 gpuwatch.py stat -s week --plot'
+	ansible -i ~/svs.txt all -m shell -a "~/anaconda3/bin/python3 gpuwatch.py stat -s week --plot --plot_title '{{inventory_hostname}}'"
 
 fetch_svg:
 	ansible -i ~/svs.txt all -m fetch -a "src=~/gpuwatch.svg dest={{inventory_hostname}}_gpuwatch.svg flat=yes"

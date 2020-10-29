@@ -74,6 +74,7 @@ def main_stat(argv):
     ag.add_argument('-s', '--span', type=str, default='day',
             choices=('hour', 'day', 'week', 'month', 'season'))
     ag.add_argument('--plot', action='store_true')
+    ag.add_argument('--plot_title', type=str, default=f'gpuwatch.py')
     ag.add_argument('--no_user', action='store_true')
     ag.add_argument('--no_system', action='store_true')
     ag = ag.parse_args(argv)
@@ -122,10 +123,13 @@ def main_stat(argv):
         # offset the timezone to UTC+8
         stamps = [x + 3600*8 for x in stamps]
 
-        fig, ax = lab.subplots()
+        height = 5
+        width = 5 * max(1, (len(stamps) // (60*24)))
+        fig, ax = lab.subplots(figsize=(width,height))
         a = [float(x) for x in gpuwatch['gpu_util']]
         b = [float(x) for x in gpuwatch['vram_ratio']]
         t = lab.matplotlib.dates.epoch2num(stamps)
+        lab.title(ag.plot_title + f'@ {time.ctime()}')
 
         ax.plot_date(t, a, 'r.-')
         ax.set(ylim=(0., 100.))
@@ -142,6 +146,7 @@ def main_stat(argv):
 
         fig.autofmt_xdate()
         lab.savefig('gpuwatch.svg')
+        cprint('Plot have been saved to gpuwatch.svg', 'yellow')
 
 
 if __name__ == '__main__':
