@@ -64,6 +64,12 @@ second line and change the executable path according to your python3 installatio
 * * * * * lumin cd && /home/lumin/anaconda3/bin/python3 gpuwatch.py snapshot
 ```
 
+## See Also
+
+1. SSH-keygen https://www.redhat.com/sysadmin/configure-ssh-keygen
+1. Ansible https://docs.ansible.com/ansible/latest/index.html
+1. GPUstat https://github.com/wookayin/gpustat
+
 ## Copyright
 
 ```
