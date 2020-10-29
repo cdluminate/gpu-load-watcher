@@ -30,8 +30,10 @@ __DB__ = '/var/log/__gpuwatch__.db' if os.getuid() == 0 else '__gpuwatch__.db'
 if not os.path.exists(__DB__):
     conn = sqlite3.connect(__DB__)
     c = conn.cursor()
-    c.execute('''CREATE TABLE userwatch (time real, name text, processes inteter, vmem_occupy real)''')
-    c.execute('''CREATE TABLE gpuwatch (time real, gpu_util real, vmem_ratio real)''')
+    c.execute(
+        '''CREATE TABLE userwatch (time real, name text, processes inteter, vmem_occupy real)''')
+    c.execute(
+        '''CREATE TABLE gpuwatch (time real, gpu_util real, vmem_ratio real)''')
     conn.commit()
     conn.close()
 
@@ -46,21 +48,26 @@ def main_snapshot(argv):
 
     stamp = time.time()
     gpustat = subprocess.Popen(['gpustat'], stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).communicate()[0].decode().strip()
+                               stderr=subprocess.PIPE).communicate()[0].decode().strip()
 
     names = re.findall(r'(\w+)\(\d+M\)', gpustat)
     counter = collections.Counter(names)
-    vram_used, vram_total = tuple(zip(*re.findall(r'(\d+)\s/\s(\d+)\s.B', gpustat)))
-    vram_ratio = sum(int(x) for x in vram_used) / sum(int(x) for x in vram_total)
-    gpu_util = statistics.mean(int(x) for x in re.findall(r'(\d+)\s%', gpustat))
+    vram_used, vram_total = tuple(
+        zip(*re.findall(r'(\d+)\s/\s(\d+)\s.B', gpustat)))
+    vram_ratio = sum(int(x) for x in vram_used) / sum(int(x)
+                                                      for x in vram_total)
+    gpu_util = statistics.mean(int(x)
+                               for x in re.findall(r'(\d+)\s%', gpustat))
     vram_occupy = {user: sum(int(x) for x in re.findall(rf'{user}\((\d+)\w\)',
-        gpustat)) / sum(int(x) for x in vram_total) for user in counter.keys()}
+                                                        gpustat)) / sum(int(x) for x in vram_total) for user in counter.keys()}
 
     conn = sqlite3.connect(ag.db)
     c = conn.cursor()
     for (k, v) in counter.items():
-        c.execute(f'''INSERT INTO userwatch VALUES ({stamp}, "{k}", {v}, {vram_occupy[k]})''')
-    c.execute(f'''INSERT INTO gpuwatch VALUES ({stamp}, {gpu_util}, {vram_ratio})''')
+        c.execute(
+            f'''INSERT INTO userwatch VALUES ({stamp}, "{k}", {v}, {vram_occupy[k]})''')
+    c.execute(
+        f'''INSERT INTO gpuwatch VALUES ({stamp}, {gpu_util}, {vram_ratio})''')
     conn.commit()
     conn.close()
 
@@ -72,7 +79,7 @@ def main_stat(argv):
     ag = argparse.ArgumentParser()
     ag.add_argument('-B', '--db', type=str, default=__DB__)
     ag.add_argument('-s', '--span', type=str, default='day',
-            choices=('hour', 'day', 'week', 'month', 'season'))
+                    choices=('hour', 'day', 'week', 'month', 'season'))
     ag.add_argument('--plot', action='store_true')
     ag.add_argument('--plot_title', type=str, default=f'gpuwatch.py')
     ag.add_argument('--no_user', action='store_true')
@@ -82,7 +89,7 @@ def main_stat(argv):
     conn = sqlite3.connect(ag.db)
     c = conn.cursor()
     stamp_lower = time.time() - {'hour': 3600, 'day': 3600*24, 'week': 3600*24*7,
-            'month': 3600*24*30, 'season': 3600*24*90}[ag.span]
+                                 'month': 3600*24*30, 'season': 3600*24*90}[ag.span]
     # Query the database : userwatch
     gpuwatch = collections.defaultdict(list)
     stamps = list()
@@ -103,16 +110,19 @@ def main_stat(argv):
     if not ag.no_system:
         cprint('SYSTEM |'.rjust(16), 'red', end=' ')
         for (k, v) in gpuwatch.items():
-            print(f'{k}=', colored(str('%7.2f'%statistics.mean(v)), 'cyan'), end=' ')
+            print(f'{k}=', colored(str('%7.2f' %
+                                       statistics.mean(v)), 'cyan'), end=' ')
         print()
     if not ag.no_user:
         for (k, v) in userstat.items():
             cprint(f'{k} |'.rjust(16), 'blue', end=' ')
             for attr in sorted(v.keys()):
                 if attr == 'cumtime':
-                    print(f'{attr}=', colored(str('%8.2f'%sum(v[attr])), 'cyan'), end=' ')
+                    print(f'{attr}=', colored(str('%8.2f' %
+                                                  sum(v[attr])), 'cyan'), end=' ')
                 else:
-                    print(f'{attr}=', colored(str('%8.2f'%statistics.mean(v[attr])), 'cyan'), end=' ')
+                    print(f'{attr}=', colored(str('%8.2f' %
+                                                  statistics.mean(v[attr])), 'cyan'), end=' ')
             print()
     # [optional] Plotting
     if ag.plot:
@@ -125,7 +135,7 @@ def main_stat(argv):
 
         height = 5
         width = 5 * max(1, (len(stamps) // (60*24)))
-        fig, ax = lab.subplots(figsize=(width,height))
+        fig, ax = lab.subplots(figsize=(width, height))
         a = [float(x) for x in gpuwatch['gpu_util']]
         b = [float(x) for x in gpuwatch['vram_ratio']]
         t = lab.matplotlib.dates.epoch2num(stamps)
@@ -153,7 +163,7 @@ def main_svgreduce(argv):
     '''
     reduce the svg files into a single PDF file
     '''
-    svgfiles = glob.glob('*_gpuwatch.svg', recursive = True)
+    svgfiles = glob.glob('*_gpuwatch.svg', recursive=True)
     pdfs = []
     for svg in svgfiles:
         print(f'Converting {svg} into PDF using inkscape ...')
