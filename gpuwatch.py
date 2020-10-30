@@ -138,7 +138,7 @@ def main_stat(argv):
         stamps = [x + 3600*8 for x in stamps]
 
         height = 5
-        width = 5 * max(1, (len(stamps) // (60*24)))
+        width = 5 * max(1, (1 + len(stamps) // (60*24)))
         fig, ax = lab.subplots(figsize=(width, height))
         a = [float(x) for x in gpuwatch['gpu_util']]
         b = [float(x) for x in gpuwatch['vram_ratio']]
