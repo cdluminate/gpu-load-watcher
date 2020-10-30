@@ -145,14 +145,14 @@ def main_stat(argv):
         t = lab.matplotlib.dates.epoch2num(stamps)
         lab.title(ag.plot_title + f' @ {time.ctime()}')
 
-        ax.plot_date(t, a, 'r.-')
+        ax.plot_date(t, a, '.-', color='crimson')
         ax.set(ylim=(0., 100.))
         ax.grid(True)
         ax.legend(['gpu_util'], loc='lower left')
         ax.xaxis.set_major_formatter(date_formatter)
 
         ax2 = ax.twinx()
-        ax2.plot_date(t, b, 'b.-')
+        ax2.plot_date(t, b, '.-', color='indigo')
         ax2.set(ylim=(0., 1.))
         ax2.grid(True)
         ax2.legend(['vram_ratio'], loc='lower right')

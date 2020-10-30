@@ -26,6 +26,7 @@ plot_week_local:
 		mv gpuwatch.svg $${SVG}; \
 		done
 	python3 gpuwatch.py svgreduce
+	-evince svgreduce.pdf
 
 fetch_svg:
 	ansible -i ~/svs.txt all -m fetch -a "src=~/gpuwatch.svg dest={{inventory_hostname}}_gpuwatch.svg flat=yes"
