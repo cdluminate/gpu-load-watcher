@@ -2,7 +2,7 @@
 
 Utility to record and plot GPU usage of the deep learning server/workstation.
 
-Version: 0.4.0 (stable)
+Version: 0.4.1 (stable)
 
 ## Demo
 
