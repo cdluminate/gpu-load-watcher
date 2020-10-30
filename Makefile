@@ -17,6 +17,16 @@ stat_day:
 plot_week:
 	ansible -i ~/svs.txt all -m shell -a "~/anaconda3/bin/python3 gpuwatch.py stat -s week --plot --plot_title '{{inventory_hostname}}'"
 
+plot_week_local:
+	for DB in $$(ls *_gpuwatch.db); do \
+		IP="$$(echo $${DB} | sed -e 's/_gpuwatch.db$$//g')"; \
+		SVG="$${IP}_gpuwatch.svg"; \
+		echo $${IP} $${SVG}; \
+		python3 gpuwatch.py stat -s week --plot --plot_title "$${IP}" -B"$${DB}"; \
+		mv gpuwatch.svg $${SVG}; \
+		done
+	python3 gpuwatch.py svgreduce
+
 fetch_svg:
 	ansible -i ~/svs.txt all -m fetch -a "src=~/gpuwatch.svg dest={{inventory_hostname}}_gpuwatch.svg flat=yes"
 	python3 gpuwatch.py svgreduce 2>/dev/null
