@@ -130,20 +130,26 @@ def main_stat(argv):
             print()
     # [optional] Plotting
     if ag.plot:
-        import pylab as lab
+        import matplotlib as plt
+        import matplotlib.pyplot
         import numpy as np
+        # configuring matplotlib
+        plt.pyplot.style.use('bmh')
+        plt.pyplot.rcParams['font.sans-serif'] = 'Noto Sans'
+        plt.pyplot.rcParams['font.weight'] = 'normal'
+        # date formatter
         date_fmt = '%y-%m-%d %H:%M:%S'
-        date_formatter = lab.matplotlib.dates.DateFormatter(date_fmt)
+        date_formatter = plt.dates.DateFormatter(date_fmt)
         # offset the timezone to UTC+8
         stamps = [x + 3600*8 for x in stamps]
 
         height = 5
         width = 5 * max(1, (1 + len(stamps) // (60*24)))
-        fig, ax = lab.subplots(figsize=(width, height))
+        fig, ax = plt.pyplot.subplots(figsize=(width, height))
         a = [float(x) for x in gpuwatch['gpu_util']]
         b = [float(x) for x in gpuwatch['vram_ratio']]
-        t = lab.matplotlib.dates.epoch2num(stamps)
-        lab.title(ag.plot_title + f' @ {time.ctime()}')
+        t = plt.dates.epoch2num(stamps)
+        plt.pyplot.title(ag.plot_title + f' @ {time.ctime()}', fontweight='book')
 
         ax.plot_date(t, a, '.-', color='crimson')
         ax.set(ylim=(0., 100.))
@@ -159,7 +165,7 @@ def main_stat(argv):
         ax2.xaxis.set_major_formatter(date_formatter)
 
         fig.autofmt_xdate()
-        lab.savefig('gpuwatch.svg')
+        plt.pyplot.savefig('gpuwatch.svg')
         cprint('Plot have been saved to gpuwatch.svg', 'yellow')
 
 
