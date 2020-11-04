@@ -7,9 +7,7 @@ stat:
 all:
 	$(MAKE) copy_py
 	$(MAKE) fetch_db
-	$(MAKE) plot_week
-	$(MAKE) fetch_svg
-	-evince svgreduce.pdf
+	$(MAKE) plot_week_local
 
 stat_day:
 	ansible -i ~/svs.txt all -m shell -a '~/anaconda3/bin/python3 gpuwatch.py stat -s day'
