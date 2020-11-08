@@ -9,8 +9,8 @@ all:
 	$(MAKE) fetch_db
 	$(MAKE) plot_week_local
 
-stat_day:
-	ansible -i ~/svs.txt all -m shell -a '~/anaconda3/bin/python3 gpuwatch.py stat -s day'
+stat_%:
+	ansible -i ~/svs.txt all -m shell -a '~/anaconda3/bin/python3 gpuwatch.py stat -s $(shell echo $@ | sed -e "s/stat_//")'
 
 plot_week:
 	ansible -i ~/svs.txt all -m shell -a "~/anaconda3/bin/python3 gpuwatch.py stat -s week --plot --plot_title '{{inventory_hostname}}'"
