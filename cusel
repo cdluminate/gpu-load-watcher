@@ -16,6 +16,9 @@ With cusel:
 
     2. wait for a card with 4000MB idle memory and automatically select it
     $ CUDA_VISIBLE_DEVICES=$(cusel -m4000) python3 train.py
+
+Copyright (C) 2020 Mo Zhou <lumin@debian.org>
+License: MIT/Expat
 '''
 from typing import *
 import os
