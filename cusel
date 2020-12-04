@@ -41,7 +41,7 @@ def __getCards() -> dict:
     ret = dict()
     for line in lines:
         idx, muse, mall = re.match(
-            r'^\[(\d)\].*(\d+)\s+/\s+(\d+) MB', line).groups()
+            r'^\[(\d)\].*\|\s+(\d+)\s+/\s+(\d+) MB', line).groups()
         ret[int(idx)] = (int(muse), int(mall))
     return ret
 
