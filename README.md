@@ -67,6 +67,13 @@ second line and change the executable path according to your python3 installatio
 * * * * * lumin cd && /home/lumin/anaconda3/bin/python3 gpuwatch.py snapshot
 ```
 
+## Scale
+
+For large scale GPU clusters for production, I believe there are better (e.g.
+fault-tolerant) solutions to monitor the overall status across computation
+nodes. The tool provided in this repository is very light-weight, and is more
+suitable for the scenario with merely one to several GPU servers.
+
 ## See Also
 
 1. SSH-keygen https://www.redhat.com/sysadmin/configure-ssh-keygen
