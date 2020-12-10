@@ -1,8 +1,11 @@
 # GPU Load Watcher
 
-Utility to record and plot GPU usage of the deep learning server/workstation.
-
 Version: 0.4.1 (stable)
+
+Utility to record and plot GPU usage of the deep learning server/workstation.
+This repository also contains some helper utilities related to cuda:
+
+1. `cusel`: automatically select a cuda device, allowing us to do `$ CUDA_VISIBLE_DEVICES=$(cusel) python3 train.py`.
 
 ## Demo
 
