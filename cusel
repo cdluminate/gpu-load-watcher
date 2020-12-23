@@ -30,7 +30,7 @@ import fcntl
 import subprocess as sp
 
 
-def __getCards() -> dict:
+def __getCards(exclude: list=[]) -> dict:
     '''
     Get a dictionary of GPU status. GPU ID: int -> attributes: dict.
     '''
@@ -42,7 +42,8 @@ def __getCards() -> dict:
     for line in lines:
         idx, muse, mall = re.match(
             r'^\[(\d)\].*\|\s+(\d+)\s+/\s+(\d+) MB', line).groups()
-        ret[int(idx)] = (int(muse), int(mall))
+        if int(idx) not in exclude:
+            ret[int(idx)] = (int(muse), int(mall))
     return ret
 
 
@@ -67,6 +68,8 @@ if __name__ == '__main__':
     ag = argparse.ArgumentParser()
     ag.add_argument('-m', type=int, default=11000, help='how much memory (MB)')
     ag.add_argument('-i', type=int, default=15, help='polling interval')
+    ag.add_argument('--exclude', type=int, default=[], nargs='+',
+                    help='exclude gpu indices')
     ag.add_argument('--lock', type=str, default=f'/tmp/cusel.lock')
     ag = ag.parse_args()
 
@@ -76,7 +79,7 @@ if __name__ == '__main__':
 
     # Polling cards
     while True:
-        cards = __getCards()
+        cards = __getCards(ag.exclude)
         sel = __selectCard(cards, ag.m)
         if sel is not None:
             print(sel)
