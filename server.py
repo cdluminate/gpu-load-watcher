@@ -45,11 +45,12 @@ def pastweek_stat_per_host(hostname) -> dict:
             if gpu_index not in week_all_per_gpu:
                 week_all_per_gpu[gpu_index] = defaultdict(int)
             for (name, usage) in gpu['users'].items():
-                week_all_per_gpu[gpu_index][name] += usage
+                week_all_per_gpu[gpu_index][name] += 1
     for index in week_all_per_gpu.keys():
-        week_all_per_gpu[index] = ' '.join(f'{k}({v})'
-        for (k, v) in (sorted(week_all_per_gpu[index].items(),
-            key=lambda x: x[-1])))
+        #week_all_per_gpu[index] = ' '.join(f'{k}({v})'
+        week_all_per_gpu[index] = ' '.join(f'{k}'
+        for (k, v) in (list(sorted(week_all_per_gpu[index].items(),
+            key=lambda x: x[-1], reverse=True))[:3]))
     return week_all_per_gpu
 
 
@@ -62,16 +63,16 @@ def html_per_gpu(gpu, pastweek: dict) -> str:
 
 <div><h4 class='lead p-2'>{index}: {name}</h4></div>
 
-<div class="lead p-2 progress w-25" role="progressbar" aria-label="Utilization" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+<div class="lead progress w-25" role="progressbar" aria-label="Utilization" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
 <div class="progress-bar overflow-visible text-dark text-center" style="width: {utilization_gpu}%"><b>Utilization: {utilization_gpu}%</b></div>
 </div>
 
-<div class="lead p-2 progress w-25" role="progressbar" aria-label="Memory" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-<div class="progress-bar overflow-visible text-dark text-center" style="width: {percent}%"><b>{percent}% ({memory_used}M / {memory_total}M)</b></div>
+<div class="lead progress w-25" role="progressbar" aria-label="Memory" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+<div class="progress-bar overflow-visible text-dark text-center" style="width: {memory_percent}%"><b>{memory_percent}% ({memory_used}M / {memory_total}M)</b></div>
 </div>
 
 <small><b>Users:</b> {users}</small>
-<small><b>PastWeek:</b> {pastweek}</small>
+<small><b>Top3Users:</b> {pastweek}</small>
 
 </div><!-- hstack -->
 
@@ -79,7 +80,7 @@ def html_per_gpu(gpu, pastweek: dict) -> str:
         index=gpu['index'],
         name=gpu['name'],
         utilization_gpu=gpu['utilization.gpu'],
-        percent=memory_percent,
+        memory_percent=memory_percent,
         memory_used=gpu['memory.used'],
         memory_total=gpu['memory.total'],
         users=users,
