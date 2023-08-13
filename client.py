@@ -2,6 +2,12 @@
 Send JSON GPU usage to server.py instance.
 Copyright (C) 2023, Mo Zhou <lumin@debian.org>
 MIT/Expat License
+
+Usage
+=====
+
+At the client side:
+$ python3 client.py --server-url=http://<server_name>:<port>/submit
 '''
 import re
 import os

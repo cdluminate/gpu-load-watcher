@@ -2,6 +2,11 @@
 Receive and Serve JSON GPU usage to from client.py instances.
 Copyright (C) 2023, Mo Zhou <lumin@debian.org>
 MIT/Expat License
+
+Usage
+=====
+
+At the server side: `$ FLASK_APP=server.py flask run`
 '''
 import datetime
 import rich
