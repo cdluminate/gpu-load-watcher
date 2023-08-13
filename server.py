@@ -6,8 +6,9 @@ MIT/Expat License
 Usage
 =====
 
-At the server side: `$ FLASK_APP=server.py flask run`
+At the server side: `$ python3 server.py`
 '''
+import argparse
 import datetime
 import rich
 from collections import defaultdict
@@ -144,3 +145,14 @@ def submit():
                 entries.append(entry)
         G_history[hostname] = entries
     return data
+
+
+if __name__ == '__main__':
+    ag = argparse.ArgumentParser()
+    ag.add_argument('--debug', action='store_true',
+        help='toggle debugging mode')
+    ag.add_argument('-H', '--host', type=str, default='0.0.0.0')
+    ag.add_argument('-P', '--port', type=int, default=5000)
+    ag = ag.parse_args()
+
+    app.run(host=ag.host, port=ag.port, debug=ag.debug)
