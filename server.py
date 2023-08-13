@@ -10,6 +10,7 @@ At the server side: `$ FLASK_APP=server.py flask run`
 '''
 import datetime
 import rich
+from collections import defaultdict
 console = rich.get_console()
 from flask import Flask, request
 app = Flask(__name__)
@@ -32,11 +33,29 @@ TAIL = '''
 </html>
 '''
 
-G_latest = dict()
+G_history = defaultdict(list)
 
-def html_per_gpu(gpu) -> str:
+
+def pastweek_stat_per_host(hostname) -> dict:
+    history = G_history[hostname]
+    week_all_per_gpu = dict()
+    for submit in history:
+        for gpu in submit['gpus']:
+            gpu_index = gpu['index']
+            if gpu_index not in week_all_per_gpu:
+                week_all_per_gpu[gpu_index] = defaultdict(int)
+            for (name, usage) in gpu['users'].items():
+                week_all_per_gpu[gpu_index][name] += usage
+    for index in week_all_per_gpu.keys():
+        week_all_per_gpu[index] = ' '.join(f'{k}({v})'
+        for (k, v) in (sorted(week_all_per_gpu[index].items(),
+            key=lambda x: x[-1])))
+    return week_all_per_gpu
+
+
+def html_per_gpu(gpu, pastweek: dict) -> str:
     memory_percent = int(100 * (gpu['memory.used'] / float(gpu['memory.total'])))
-    users=' '.join(['{a} ({b}M)'.format(a=a, b=b) for (a, b) in gpu['users'].items()])
+    users=' '.join(['{a}({b}M)'.format(a=a, b=b) for (a, b) in gpu['users'].items()])
     html = '''
 <li class="list-group-item">
 <div class='hstack gap-3'>
@@ -52,7 +71,7 @@ def html_per_gpu(gpu) -> str:
 </div>
 
 <small><b>Users:</b> {users}</small>
-<small><b>PastWeek:</b> WIP</small>
+<small><b>PastWeek:</b> {pastweek}</small>
 
 </div><!-- hstack -->
 
@@ -64,10 +83,11 @@ def html_per_gpu(gpu) -> str:
         memory_used=gpu['memory.used'],
         memory_total=gpu['memory.total'],
         users=users,
+        pastweek=pastweek[gpu['index']],
         )
     return html
 
-def html_per_host(host) -> str:
+def html_per_host(host, pastweek: dict) -> str:
     html_gpus = []
     html_gpus.append('''
 <div class="card">
@@ -80,7 +100,7 @@ def html_per_host(host) -> str:
     query_time=datetime.datetime.fromtimestamp(host['query_time']),
 ))
     for gpu in host['gpus']:
-        html_gpus.append(html_per_gpu(gpu))
+        html_gpus.append(html_per_gpu(gpu, pastweek=pastweek))
     #for gpu in host['gpus']:
     #    html_gpus.append(html_per_gpu(gpu))
     #for gpu in host['gpus']:
@@ -98,15 +118,28 @@ def html_per_host(host) -> str:
 @app.route('/')
 def root():
     body = '''<br><div class='container'>'''
-    for hostname in sorted(G_latest.keys()):
-        body += html_per_host(G_latest[hostname])
-    #for hostname in sorted(G_latest.keys()):
-    #    body += html_per_host(G_latest[hostname])
+    for hostname in sorted(G_history.keys()):
+        pastweek = pastweek_stat_per_host(hostname)
+        body += html_per_host(G_history[hostname][-1], pastweek=pastweek)
     body += '''</div>'''
     return HEADER + body + TAIL
+
 
 @app.route('/submit', methods=['POST'])
 def submit():
     data = request.json
-    G_latest[data['hostname']] = data
+    G_history[data['hostname']].append(data)
+    # clean up old history (1 week time window)
+    for hostname in G_history.keys():
+        # get latest timestamp for host
+        latest = max(x['query_time'] for x in G_history[hostname])
+        week = 7 * 24 * 3600
+        oldthresh = latest - week
+        entries = []
+        for entry in G_history[hostname]:
+            if entry['query_time'] < oldthresh:
+                pass
+            else:
+                entries.append(entry)
+        G_history[hostname] = entries
     return data
