@@ -60,6 +60,8 @@ def client_loop(args):
             console.print(r.status_code, r.json())
         except requests.ConnectionError:
             console.print(time.time(), 'connection error')
+        if args.oneshot:
+            break
         time.sleep(args.interval)
 
 
@@ -68,6 +70,7 @@ if __name__ == '__main__':
     ag.add_argument('--server-url', type=str, default='')
     ag.add_argument('--hostname', type=str, default=socket.gethostname())
     ag.add_argument('--interval', type=int, default=5)
+    ag.add_argument('--oneshot', '-1', action='store_true')
     ag = ag.parse_args()
     console.print(ag)
 
