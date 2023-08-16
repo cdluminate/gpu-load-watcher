@@ -53,7 +53,7 @@ def pastweek_stat_per_host(hostname) -> dict:
         #week_all_per_gpu[index] = ' '.join(f'{k}({v})'
         week_all_per_gpu[index] = ' '.join(f'{k}'
         for (k, v) in (list(sorted(week_all_per_gpu[index].items(),
-            key=lambda x: x[-1], reverse=True))[:3]))
+            key=lambda x: x[-1], reverse=True))[:1]))
     return week_all_per_gpu
 
 
@@ -80,7 +80,7 @@ def html_per_gpu(gpu, pastweek: dict) -> str:
 <li class="list-group-item">
 <div class='hstack gap-3'>
 
-<div><h4 class='lead p-2'>{index}: {name}</h4></div>
+<div><span>{index}: {name}</span></div>
 
 <div class="lead progress w-25" role="progressbar" aria-label="Utilization" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
 <div class="progress-bar {util_color} overflow-visible text-dark text-center" style="width: {utilization_gpu}%"><b>Utilization: {utilization_gpu}%</b></div>
@@ -91,7 +91,7 @@ def html_per_gpu(gpu, pastweek: dict) -> str:
 </div>
 
 <small><b>Users:</b> {users}</small>
-<small><b>Top3Users:</b> {pastweek}</small>
+<small><b>TopUser:</b> {pastweek}</small>
 
 </div><!-- hstack -->
 
