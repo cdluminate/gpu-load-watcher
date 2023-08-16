@@ -117,7 +117,7 @@ def html_per_host(host, pastweek: dict) -> str:
     html_gpus.append('''
 <div class="card">
 <div class="card-header">
-    {hostname} -- QueryTime: {query_time}
+    {hostname} <span class="float-end">QueryTime: {query_time}</span>
 </div>
 <ul class="list-group list-group-flush">
 '''.format(
