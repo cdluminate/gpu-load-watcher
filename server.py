@@ -59,6 +59,22 @@ def pastweek_stat_per_host(hostname) -> dict:
 
 def html_per_gpu(gpu, pastweek: dict) -> str:
     memory_percent = int(100 * (gpu['memory.used'] / float(gpu['memory.total'])))
+    if memory_percent <= 25:
+        memory_color = 'bg-success'
+    elif memory_percent <= 50:
+        memory_color = 'bg-info'
+    elif memory_percent <= 75:
+        memory_color = 'bg-warning'
+    else:
+        memory_color = 'bg-danger'
+    if gpu['utilization.gpu'] <= 25:
+        util_color = 'bg-success'
+    elif gpu['utilization.gpu'] <= 50:
+        util_color = 'bg-info'
+    elif gpu['utilization.gpu'] <= 75:
+        util_color = 'bg-warning'
+    else:
+        util_color = 'bg-danger'
     users=' '.join(['{a}({b}M)'.format(a=a, b=b) for (a, b) in gpu['users'].items()])
     html = '''
 <li class="list-group-item">
@@ -67,11 +83,11 @@ def html_per_gpu(gpu, pastweek: dict) -> str:
 <div><h4 class='lead p-2'>{index}: {name}</h4></div>
 
 <div class="lead progress w-25" role="progressbar" aria-label="Utilization" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-<div class="progress-bar overflow-visible text-dark text-center" style="width: {utilization_gpu}%"><b>Utilization: {utilization_gpu}%</b></div>
+<div class="progress-bar {util_color} overflow-visible text-dark text-center" style="width: {utilization_gpu}%"><b>Utilization: {utilization_gpu}%</b></div>
 </div>
 
 <div class="lead progress w-25" role="progressbar" aria-label="Memory" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-<div class="progress-bar overflow-visible text-dark text-center" style="width: {memory_percent}%"><b>{memory_percent}% ({memory_used}M / {memory_total}M)</b></div>
+<div class="progress-bar {memory_color} overflow-visible text-dark text-center" style="width: {memory_percent}%"><b>{memory_percent}% ({memory_used}M / {memory_total}M)</b></div>
 </div>
 
 <small><b>Users:</b> {users}</small>
@@ -83,7 +99,9 @@ def html_per_gpu(gpu, pastweek: dict) -> str:
         index=gpu['index'],
         name=gpu['name'],
         utilization_gpu=gpu['utilization.gpu'],
+        util_color=util_color,
         memory_percent=memory_percent,
+        memory_color=memory_color,
         memory_used=gpu['memory.used'],
         memory_total=gpu['memory.total'],
         users=users,
