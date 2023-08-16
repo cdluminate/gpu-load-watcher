@@ -8,6 +8,7 @@ Usage
 
 At the server side: `$ python3 server.py`
 '''
+import gc
 import argparse
 import datetime
 import rich
@@ -35,6 +36,7 @@ TAIL = '''
 '''
 
 G_history = defaultdict(list)
+G_history_limit : int = 512
 
 
 def pastweek_stat_per_host(hostname) -> dict:
@@ -143,7 +145,11 @@ def submit():
                 pass
             else:
                 entries.append(entry)
+        if len(entries) >= G_history_limit and len(entries) % 5 == 0:
+            entries = entries[::5]
         G_history[hostname] = entries
+        # my cloud server does no have much memory
+        gc.collect()
     return data
 
 
