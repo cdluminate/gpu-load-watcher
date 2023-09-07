@@ -9,10 +9,10 @@ Usage
 At the server side: `$ python3 server.py`
 '''
 import gc
+import time
 import argparse
 import datetime
 import rich
-from collections import defaultdict
 console = rich.get_console()
 from flask import Flask, request
 app = Flask(__name__)
@@ -38,29 +38,14 @@ TAIL = '''
 </html>
 '''
 
-G_history = defaultdict(list)
-G_history_limit : int = 512
+
+# global dict storing the latest record from each client
+__G__ = dict()
+# global dict storing the timestamp of the latest record
+__G_lastsync__ = dict()
 
 
-def pastweek_stat_per_host(hostname) -> dict:
-    history = G_history[hostname]
-    week_all_per_gpu = dict()
-    for submit in history:
-        for gpu in submit['gpus']:
-            gpu_index = gpu['index']
-            if gpu_index not in week_all_per_gpu:
-                week_all_per_gpu[gpu_index] = defaultdict(int)
-            for (name, usage) in gpu['users'].items():
-                week_all_per_gpu[gpu_index][name] += 1
-    for index in week_all_per_gpu.keys():
-        #week_all_per_gpu[index] = ' '.join(f'{k}({v})'
-        week_all_per_gpu[index] = ' '.join(f'{k}'
-        for (k, v) in (list(sorted(week_all_per_gpu[index].items(),
-            key=lambda x: x[-1], reverse=True))[:1]))
-    return week_all_per_gpu
-
-
-def html_per_gpu(gpu, pastweek: dict) -> str:
+def html_per_gpu(gpu) -> str:
     memory_percent = int(100 * (gpu['memory.used'] / float(gpu['memory.total'])))
     if memory_percent <= 25:
         memory_color = 'bg-success'
@@ -86,15 +71,16 @@ def html_per_gpu(gpu, pastweek: dict) -> str:
 <div><span>{index}: {name}</span></div>
 
 <div class="lead progress w-25" role="progressbar" aria-label="Utilization" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-<div class="progress-bar {util_color} overflow-visible text-dark text-center" style="width: {utilization_gpu}%"><b>Utilization: {utilization_gpu}%</b></div>
+<div class="progress-bar {util_color} overflow-visible text-dark text-center" style="width: {utilization_gpu}%"><b>GPU-Util: {utilization_gpu}%</b></div>
 </div>
 
 <div class="lead progress w-25" role="progressbar" aria-label="Memory" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-<div class="progress-bar {memory_color} overflow-visible text-dark text-center" style="width: {memory_percent}%"><b>{memory_percent}% ({memory_used}M / {memory_total}M)</b></div>
+<div class="progress-bar {memory_color} overflow-visible text-dark text-center" style="width: {memory_percent}%"><b>GPU-Mem: {memory_percent}% ({memory_used}M / {memory_total}M)</b></div>
 </div>
 
+<div>
 <small><b>Users:</b> {users}</small>
-<small><b>TopUser:</b> {pastweek}</small>
+</div>
 
 </div><!-- hstack -->
 
@@ -108,24 +94,36 @@ def html_per_gpu(gpu, pastweek: dict) -> str:
         memory_used=gpu['memory.used'],
         memory_total=gpu['memory.total'],
         users=users,
-        pastweek=pastweek[gpu['index']],
         )
     return html
 
-def html_per_host(host, pastweek: dict) -> str:
+def html_per_host(host, lastsync) -> str:
+    # calculate the time since the last sync
+    since_last_sync = int(time.time() - lastsync)
+    if since_last_sync > 60:
+        since_last_sync = f'''<span class="badge bg-danger">Last Sync: {since_last_sync} (ERROR: Client Disconnected)</span>'''
+    else:
+        since_last_sync = f'''<span class="badge bg-success">Last Sync: {since_last_sync} (OK)</span>'''
+    # format sysstat
+    mem_percent = int(100.0 * host['vm_available_M'] / host['vm_total_M'])
+    sysstat = f'''CPU: {host['cpu_percent']:.1f}% (LoadAvg: {host['loadavg'][0]:.1f}) RAM: {mem_percent}% ({int(host['vm_available_M'])} / {int(host['vm_total_M'])})'''
+    # render html
     html_gpus = []
     html_gpus.append('''
 <div class="card">
 <div class="card-header">
-    {hostname} <span class="float-end">QueryTime: {query_time}</span>
+    {hostname}
+    <span>| {sysstat}</span>
+    <span class="float-end">{since_last_sync}</span>
 </div>
 <ul class="list-group list-group-flush">
 '''.format(
     hostname=host['hostname'],
-    query_time=datetime.datetime.fromtimestamp(host['query_time']),
+    sysstat=sysstat,
+    since_last_sync=since_last_sync,
 ))
     for gpu in host['gpus']:
-        html_gpus.append(html_per_gpu(gpu, pastweek=pastweek))
+        html_gpus.append(html_per_gpu(gpu))
     #for gpu in host['gpus']:
     #    html_gpus.append(html_per_gpu(gpu))
     #for gpu in host['gpus']:
@@ -143,9 +141,8 @@ def html_per_host(host, pastweek: dict) -> str:
 @app.route('/')
 def root():
     body = '''<br><div class='container'>'''
-    for hostname in sorted(G_history.keys()):
-        pastweek = pastweek_stat_per_host(hostname)
-        body += html_per_host(G_history[hostname][-1], pastweek=pastweek)
+    for hostname in sorted(__G__.keys()):
+        body += html_per_host(__G__[hostname], __G_lastsync__[hostname])
     body += '''</div>'''
     return HEADER + body + TAIL
 
@@ -153,33 +150,18 @@ def root():
 @app.route('/submit', methods=['POST'])
 def submit():
     data = request.json
-    G_history[data['hostname']].append(data)
-    # clean up old history (1 week time window)
-    for hostname in G_history.keys():
-        # get latest timestamp for host
-        latest = max(x['query_time'] for x in G_history[hostname])
-        week = 7 * 24 * 3600
-        oldthresh = latest - week
-        entries = []
-        for entry in G_history[hostname]:
-            if entry['query_time'] < oldthresh:
-                pass
-            else:
-                entries.append(entry)
-        if len(entries) >= G_history_limit and len(entries) % 5 == 0:
-            entries = entries[::5]
-        G_history[hostname] = entries
-        # my cloud server does no have much memory
-        gc.collect()
+    __G__[data['hostname']] = data
+    __G_lastsync__[data['hostname']] = time.time()
+    # my cloud server does no have much memory
+    gc.collect()
     return data
 
 
 if __name__ == '__main__':
     ag = argparse.ArgumentParser()
-    ag.add_argument('--debug', action='store_true',
-        help='toggle debugging mode')
+    ag.add_argument('--debug', action='store_true', help='toggle debugging mode')
     ag.add_argument('-H', '--host', type=str, default='0.0.0.0')
-    ag.add_argument('-P', '--port', type=int, default=5000)
+    ag.add_argument('-P', '--port', type=int, default=4222)
     ag = ag.parse_args()
 
     app.run(host=ag.host, port=ag.port, debug=ag.debug)

@@ -20,6 +20,7 @@ from collections import defaultdict
 import gpustat
 import requests
 import time
+import psutil
 console = rich.get_console()
 
 
@@ -49,14 +50,24 @@ def gpustat_filtered() -> object:
     return stat
 
 
+def psutil_stat() -> object:
+    return {
+            'cpu_percent': psutil.cpu_percent(),
+            'loadavg': psutil.getloadavg(),
+            'vm_total_M': psutil.virtual_memory().total / (1024**2),
+            'vm_available_M': psutil.virtual_memory().available / (1024**2),
+            }
+
+
 def client_loop(args):
     '''
     infinite loop for client side
     '''
     while True:
         s = gpustat_filtered()
+        p = psutil_stat()
         try:
-            r = requests.post(ag.server_url, json=s)
+            r = requests.post(ag.server_url, json=s|p)
             console.print(r.status_code, r.json())
         except requests.ConnectionError:
             console.print(time.time(), 'connection error')
@@ -67,7 +78,7 @@ def client_loop(args):
 
 if __name__ == '__main__':
     ag = argparse.ArgumentParser()
-    ag.add_argument('--server-url', type=str, default='')
+    ag.add_argument('-S', '--server-url', type=str, default='http://localhost:4222/submit')
     ag.add_argument('--hostname', type=str, default=socket.gethostname())
     ag.add_argument('--interval', type=int, default=5)
     ag.add_argument('--oneshot', '-1', action='store_true')
