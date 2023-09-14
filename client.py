@@ -64,13 +64,15 @@ def client_loop(args):
     infinite loop for client side
     '''
     while True:
-        s = gpustat_filtered()
-        p = psutil_stat()
         try:
+            s = gpustat_filtered()
+            p = psutil_stat()
             r = requests.post(ag.server_url, json=s|p)
             console.print(r.status_code, r.json())
         except requests.ConnectionError:
             console.print(time.time(), 'connection error')
+        except:
+            pass
         if args.oneshot:
             break
         time.sleep(args.interval)
