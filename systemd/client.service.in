@@ -3,7 +3,7 @@ Description=User Mode HTTP Client
 
 [Service]
 WorkingDirectory=@WORKING_DIRECTORY@
-ExecStart=/usr/bin/python3 client.py --oneshot --server-url http://@SERVER_ADDR@:4222/submit
+ExecStart=@PYTHON3@ client.py --oneshot --server-url http://@SERVER_ADDR@:4222/submit
 Restart=always
 RestartSec=5
 

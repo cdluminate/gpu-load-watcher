@@ -5,6 +5,7 @@ main:
 	mkdir -p $(SYSTEMD_PATH)
 	sed -e "s|@WORKING_DIRECTORY@|$(shell pwd)|g" \
         -e "s|@SERVER_ADDR@|$(SERVER_ADDR)|g" \
+        -e "s|@PYTHON3@|$(shell command -v python3)|g" \
         systemd/client.service.in > $(SYSTEMD_PATH)/client.service
 	cat $(SYSTEMD_PATH)/client.service
 	systemctl --user daemon-reload
