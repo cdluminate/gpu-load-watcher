@@ -1,0 +1,11 @@
+[Unit]
+Description=User Mode HTTP Server
+
+[Service]
+WorkingDirectory=@WORKING_DIRECTORY@
+ExecStart=/usr/bin/python3 server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

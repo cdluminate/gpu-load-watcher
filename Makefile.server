@@ -1,0 +1,8 @@
+SYSTEMD_PATH=~/.config/systemd/user/
+
+main:
+	mkdir -p $(SYSTEMD_PATH)
+	sed -e "s|@WORKING_DIRECTORY@|$(shell pwd)|g" systemd/server.service.in > $(SYSTEMD_PATH)/server.service
+	cat $(SYSTEMD_PATH)/server.service
+	systemctl --user daemon-reload
+	systemctl --user start server
