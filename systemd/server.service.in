@@ -3,7 +3,7 @@ Description=User Mode HTTP Server
 
 [Service]
 WorkingDirectory=@WORKING_DIRECTORY@
-ExecStart=/usr/bin/python3 server.py
+ExecStart=/usr/bin/python3 server.py -P @PORT@
 Restart=always
 RestartSec=5
 
