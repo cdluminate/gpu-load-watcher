@@ -38,22 +38,20 @@ License: MIT/Expat
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">GPU Status</a>
+    <a class="navbar-brand" href="/">GPU Status</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="true">
-            Dropdown
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Scope
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">All (default)</a></li>
+            <li><a class="dropdown-item" href="/">All (default)</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">server1</a></li>
-            <li><a class="dropdown-item" href="#">server2</a></li>
-            <li><a class="dropdown-item" href="#">server3</a></li>
+            @NAV_CLIENTS@
           </ul>
         </li>
       </ul>
@@ -68,6 +66,11 @@ License: MIT/Expat
 '''
 
 TAIL = '''
+
+<br>
+<hr>
+<p class="text-center text-body-tertiary">Copyright (C) 2023 Mo Zhou</p>
+
   </body>
 </html>
 '''
@@ -172,13 +175,44 @@ def html_per_host(host, lastsync) -> str:
     return '\n'.join(str(x) for x in html_gpus)
 
 
+def gen_client_list() -> str:
+    '''
+    generate the client list for the navbar
+    '''
+    lines = []
+    for client in __G__.keys():
+        lines.append(f'<li><a class="dropdown-item" href="/{client}">{client}</a></li>')
+    return '\n'.join(lines)
+
+
 @app.route('/')
 def root():
     body = '''<br><div class='container'>'''
     for hostname in sorted(__G__.keys()):
         body += html_per_host(__G__[hostname], __G_lastsync__[hostname])
     body += '''</div>'''
-    return HEADER + body + TAIL
+    header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
+    tail = TAIL
+    return header + body + tail
+
+
+@app.route('/<string:client>')
+def one_client(client: str):
+    body = '''<br><div class='container'>'''
+    if client in __G__:
+        body += html_per_host(__G__[client], __G_lastsync__[client])
+    else:
+        body += f'''
+        <div class="alert alert-danger" role="alert">
+          The specified client "{client}" does not exist.
+          Check your URL and try again!
+          <a href="/">Click here to reset.</a>
+        </div>
+        '''
+    body += '''</div>'''
+    header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
+    tail = TAIL
+    return header + body + tail
 
 
 @app.route('/submit', methods=['POST'])
