@@ -1,3 +1,4 @@
+# helper for installing and running server.py systemd service
 SYSTEMD_PATH=~/.config/systemd/user/
 PORT=4222
 

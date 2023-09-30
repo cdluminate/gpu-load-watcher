@@ -7,7 +7,9 @@ Usage
 =====
 
 At the client side:
-$ python3 client.py --server-url=http://<server_name>:<port>/submit
+  $ python3 client.py --server-url=http://<server_name>:<port>/submit
+If you want to make this robust, just use Makefile.client to
+install the systemd service unit in the user mode.
 '''
 import re
 import os

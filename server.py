@@ -7,6 +7,8 @@ Usage
 =====
 
 At the server side: `$ python3 server.py`
+If you want to make this robust, just use Makefile.server to
+install the systemd service unit in the user mode.
 '''
 import gc
 import time
