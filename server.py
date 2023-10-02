@@ -266,7 +266,7 @@ def gen_client_find() -> str:
     for i, name in enumerate(finder.keys()):
         lines.append(f'<li><a class="dropdown-item" href="#"><b>{name}</b></a></li>')
         for (client, number) in finder[name].items():
-            lines.append(f'<li><a class="dropdown-item" href="#">{client}: <span class="badge text-bg-success">{number}</span></a></li>')
+            lines.append(f'<li><a class="dropdown-item" href="/{client}">{client}: <span class="badge text-bg-success">{number}</span></a></li>')
         if i < len(finder.keys()) - 1:
             lines.append('''<li><hr class="dropdown-divider"></li>''')
     return '\n'.join(lines)
