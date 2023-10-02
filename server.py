@@ -65,6 +65,14 @@ License: MIT/Expat
             @STAT_CLIENTS@
           </ul>
         </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Finder
+          </a>
+          <ul class="dropdown-menu">
+            @FIND_CLIENTS@
+          </ul>
+        </li>
       </ul>
     </div>
     <div class="nav-item">
@@ -244,6 +252,26 @@ def gen_client_statistics() -> str:
     return '\n'.join(lines)
 
 
+def gen_client_find() -> str:
+    '''
+    find free GPUs from all clients
+    '''
+    finder = defaultdict(lambda: defaultdict(int))
+    for client in __G__.keys():
+        for gpu in __G__[client]['gpus']:
+            name = gpu['name']
+            if __is_low_util(gpu):
+                finder[name][client] += 1
+    lines = []
+    for i, name in enumerate(finder.keys()):
+        lines.append(f'<li><a class="dropdown-item" href="#"><b>{name}</b></a></li>')
+        for (client, number) in finder[name].items():
+            lines.append(f'<li><a class="dropdown-item" href="#">{client}: <span class="badge text-bg-success">{number}</span></a></li>')
+        if i < len(finder.keys()) - 1:
+            lines.append('''<li><hr class="dropdown-divider"></li>''')
+    return '\n'.join(lines)
+
+
 @app.route('/')
 def root():
     body = '''<br><div class='container'>'''
@@ -252,6 +280,7 @@ def root():
     body += '''</div>'''
     header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
     header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
+    header = header.replace('@FIND_CLIENTS@', gen_client_find())
     tail = TAIL
     return header + body + tail
 
@@ -271,6 +300,8 @@ def one_client(client: str):
         '''
     body += '''</div>'''
     header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
+    header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
+    header = header.replace('@FIND_CLIENTS@', gen_client_find())
     tail = TAIL
     return header + body + tail
 
