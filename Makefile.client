@@ -13,3 +13,4 @@ main:
 	cat $(SYSTEMD_PATH)/client.service
 	systemctl --user daemon-reload
 	systemctl --user start client
+	systemctl --user enable client

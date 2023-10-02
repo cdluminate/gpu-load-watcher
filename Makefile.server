@@ -10,3 +10,4 @@ main:
 	cat $(SYSTEMD_PATH)/server.service
 	systemctl --user daemon-reload
 	systemctl --user start server
+	systemctl --user enable server
