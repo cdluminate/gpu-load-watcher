@@ -62,8 +62,6 @@ License: MIT/Expat
             Statistics
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/">All (default)</a></li>
-            <li><hr class="dropdown-divider"></li>
             @STAT_CLIENTS@
           </ul>
         </li>
@@ -197,31 +195,52 @@ def gen_client_list() -> str:
     return '\n'.join(lines)
 
 
+def __is_low_util(gpu) -> bool:
+    '''
+    helper function to determine whether this GPU is free or not
+    '''
+    __IGNORED_USERS__ = ['Xorg', 'xorg', 'gdm3']
+    users = set(gpu['users'].keys())
+    for ignored in __IGNORED_USERS__:
+        if ignored in users:
+            users -= {ignored,}
+    return len(users) == 0 \
+        or gpu['utilization.gpu'] <= 2 \
+        and gpu['memory.used']/gpu['memory.total'] < 0.02
+
+
 def gen_client_statistics() -> str:
     '''
     generate the client statistics for the navbar
     '''
-    __IGNORED_USERS__ = ['Xorg', 'xorg', 'gdm3']
     gpu_all, gpu_free = defaultdict(int), defaultdict(int)
+    gpu_used = defaultdict(int)
     for client in __G__.keys():
         for gpu in __G__[client]['gpus']:
             index = gpu['index']
             name = gpu['name']
             gpu_all[name] += 1
-            users = set(gpu['users'].keys())
-            for ignored in __IGNORED_USERS__:
-                if ignored in users:
-                    users -= {ignored,}
-            if len(users) == 0:
+            if __is_low_util(gpu):
                 gpu_free[name] += 1
+            else:
+                gpu_used[name] += 1
     lines = []
-    lines.append(f'<li><a class="dropdown-item" href="#"><b>Total:</b></a></li>')
+    total_all = sum(gpu_all.values())
+    lines.append(f'<li><a class="dropdown-item" href="#"><b>Total: {total_all}</b></a></li>')
     for (k, v) in gpu_all.items():
-        lines.append(f'<li><a class="dropdown-item" href="#">{k}: {v}</a></li>')
+        lines.append(f'<li><a class="dropdown-item" href="#">{k}: <span class="badge text-bg-secondary">{v}</span></a></li>')
     lines.append('''<li><hr class="dropdown-divider"></li>''')
-    lines.append(f'<li><a class="dropdown-item" href="#"><b>Free:</b></a></li>')
+    #
+    total_free = sum(gpu_free.values())
+    lines.append(f'<li><a class="dropdown-item" href="#"><b>Free: {total_free}</b></a></li>')
     for (k, v) in gpu_free.items():
-        lines.append(f'<li><a class="dropdown-item" href="#">{k}: {v}</a></li>')
+        lines.append(f'<li><a class="dropdown-item" href="#">{k}: <span class="badge text-bg-success">{v}</span></a></li>')
+    lines.append('''<li><hr class="dropdown-divider"></li>''')
+    #
+    total_used = sum(gpu_used.values())
+    lines.append(f'<li><a class="dropdown-item" href="#"><b>Used: {total_used}</b></a></li>')
+    for (k, v) in gpu_used.items():
+        lines.append(f'<li><a class="dropdown-item" href="#">{k}: <span class="badge text-bg-danger">{v}</span></a></li>')
     return '\n'.join(lines)
 
 
