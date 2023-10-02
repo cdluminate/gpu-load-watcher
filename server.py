@@ -14,6 +14,7 @@ import gc
 import time
 import argparse
 import datetime
+from collections import defaultdict
 import rich
 console = rich.get_console()
 from flask import Flask, request
@@ -56,6 +57,16 @@ License: MIT/Expat
             @NAV_CLIENTS@
           </ul>
         </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Statistics
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/">All (default)</a></li>
+            <li><hr class="dropdown-divider"></li>
+            @STAT_CLIENTS@
+          </ul>
+        </li>
       </ul>
     </div>
     <div class="nav-item">
@@ -69,7 +80,6 @@ License: MIT/Expat
 
 TAIL = '''
 
-<br>
 <hr>
 <p class="text-center text-body-tertiary">Copyright (C) 2023 Mo Zhou</p>
 
@@ -182,8 +192,36 @@ def gen_client_list() -> str:
     generate the client list for the navbar
     '''
     lines = []
-    for client in __G__.keys():
+    for client in sorted(__G__.keys()):
         lines.append(f'<li><a class="dropdown-item" href="/{client}">{client}</a></li>')
+    return '\n'.join(lines)
+
+
+def gen_client_statistics() -> str:
+    '''
+    generate the client statistics for the navbar
+    '''
+    __IGNORED_USERS__ = ['Xorg', 'xorg', 'gdm3']
+    gpu_all, gpu_free = defaultdict(int), defaultdict(int)
+    for client in __G__.keys():
+        for gpu in __G__[client]['gpus']:
+            index = gpu['index']
+            name = gpu['name']
+            gpu_all[name] += 1
+            users = set(gpu['users'].keys())
+            for ignored in __IGNORED_USERS__:
+                if ignored in users:
+                    users -= {ignored,}
+            if len(users) == 0:
+                gpu_free[name] += 1
+    lines = []
+    lines.append(f'<li><a class="dropdown-item" href="#"><b>Total:</b></a></li>')
+    for (k, v) in gpu_all.items():
+        lines.append(f'<li><a class="dropdown-item" href="#">{k}: {v}</a></li>')
+    lines.append('''<li><hr class="dropdown-divider"></li>''')
+    lines.append(f'<li><a class="dropdown-item" href="#"><b>Free:</b></a></li>')
+    for (k, v) in gpu_free.items():
+        lines.append(f'<li><a class="dropdown-item" href="#">{k}: {v}</a></li>')
     return '\n'.join(lines)
 
 
@@ -194,6 +232,7 @@ def root():
         body += html_per_host(__G__[hostname], __G_lastsync__[hostname])
     body += '''</div>'''
     header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
+    header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
     tail = TAIL
     return header + body + tail
 
