@@ -12,3 +12,16 @@ main:
 	systemctl --user daemon-reload
 	systemctl --user start server
 	systemctl --user enable server
+
+uwsgi:
+	mkdir -p $(SYSTEMD_PATH)
+	systemctl --user stop server
+	sed -e "s|@WORKING_DIRECTORY@|$(shell pwd)|g" \
+		-e "s|@PORT@|$(PORT)|g" \
+        systemd/uwsgi-server.service.in > $(SYSTEMD_PATH)/server.service
+	cat $(SYSTEMD_PATH)/server.service
+	systemctl --user daemon-reload
+	systemctl --user start server
+	systemctl --user enable server
+
+

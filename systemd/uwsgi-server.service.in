@@ -1,0 +1,12 @@
+[Unit]
+Description=User Mode HTTP Server (uWSGI)
+
+[Service]
+WorkingDirectory=@WORKING_DIRECTORY@
+; requires # apt install uwsgi uwsgi-plugin-python3
+ExecStart=/usr/bin/uwsgi --plugin http,python3 --http 0.0.0.0:@PORT@ --master -p 4 -w server:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
