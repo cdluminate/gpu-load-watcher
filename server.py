@@ -215,7 +215,7 @@ def __is_low_util(gpu) -> bool:
     '''
     helper function to determine whether this GPU is free or not
     '''
-    __IGNORED_USERS__ = ['gdm3',]
+    __IGNORED_USERS__ = ['gdm3', 'gdm']
     users = set(gpu['users'].keys())
     for ignored in __IGNORED_USERS__:
         if ignored in users:
@@ -285,7 +285,7 @@ def gen_client_user_leaderboard() -> str:
     rank users across all clients based on occupied GPU tally
     '''
     def __get_users(gpu):
-        __IGNORED_USERS__ = ['gdm3',]
+        __IGNORED_USERS__ = ['gdm3', 'gdm']
         users = set(gpu['users'].keys())
         for ignored in __IGNORED_USERS__:
             if ignored in users:
