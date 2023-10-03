@@ -73,6 +73,14 @@ License: MIT/Expat
             @FIND_CLIENTS@
           </ul>
         </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            LeaderBoard
+          </a>
+          <ul class="dropdown-menu">
+            @USER_CLIENTS@
+          </ul>
+        </li>
       </ul>
     </div>
     <div class="nav-item">
@@ -272,6 +280,29 @@ def gen_client_find() -> str:
     return '\n'.join(lines)
 
 
+def gen_client_user_leaderboard() -> str:
+    '''
+    rank users across all clients based on occupied GPU tally
+    '''
+    def __get_users(gpu):
+        __IGNORED_USERS__ = ['gdm3',]
+        users = set(gpu['users'].keys())
+        for ignored in __IGNORED_USERS__:
+            if ignored in users:
+                users -= {ignored,}
+        return users
+    board = defaultdict(int)
+    for client in __G__.keys():
+        for gpu in __G__[client]['gpus']:
+            users = __get_users(gpu)
+            for user in users:
+                board[user] += 1
+    lines = []
+    for name, occupy in sorted(board.items(), key=lambda x: -x[1]):
+        lines.append(f'<li><a class="dropdown-item" href="#">{name}: <b>{occupy}</b></a></li>')
+    return '\n'.join(lines)
+
+
 @app.route('/')
 def root():
     body = '''<br><div class='container'>'''
@@ -281,6 +312,7 @@ def root():
     header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
     header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
     header = header.replace('@FIND_CLIENTS@', gen_client_find())
+    header = header.replace('@USER_CLIENTS@', gen_client_user_leaderboard())
     tail = TAIL
     return header + body + tail
 
@@ -302,6 +334,7 @@ def one_client(client: str):
     header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
     header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
     header = header.replace('@FIND_CLIENTS@', gen_client_find())
+    header = header.replace('@USER_CLIENTS@', gen_client_user_leaderboard())
     tail = TAIL
     return header + body + tail
 
