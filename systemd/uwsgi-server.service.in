@@ -4,7 +4,8 @@ Description=User Mode HTTP Server (uWSGI)
 [Service]
 WorkingDirectory=@WORKING_DIRECTORY@
 ; requires # apt install uwsgi uwsgi-plugin-python3
-ExecStart=/usr/bin/uwsgi --plugin http,python3 --http 0.0.0.0:@PORT@ --master -p 4 -w server:app
+; note, the statistics will be wrong for multi-process mode
+ExecStart=/usr/bin/uwsgi --plugin http,python3 --http 0.0.0.0:@PORT@ -w server:app
 Restart=always
 RestartSec=5
 
