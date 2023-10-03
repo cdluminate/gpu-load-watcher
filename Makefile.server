@@ -4,6 +4,7 @@ PORT=4222
 
 main:
 	mkdir -p $(SYSTEMD_PATH)
+	systemctl --user stop server
 	sed -e "s|@WORKING_DIRECTORY@|$(shell pwd)|g" \
 		-e "s|@PORT@|$(PORT)|g" \
         systemd/server.service.in > $(SYSTEMD_PATH)/server.service

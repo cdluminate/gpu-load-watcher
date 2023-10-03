@@ -207,7 +207,7 @@ def __is_low_util(gpu) -> bool:
     '''
     helper function to determine whether this GPU is free or not
     '''
-    __IGNORED_USERS__ = ['Xorg', 'xorg', 'gdm3']
+    __IGNORED_USERS__ = ['gdm3',]
     users = set(gpu['users'].keys())
     for ignored in __IGNORED_USERS__:
         if ignored in users:
@@ -265,7 +265,7 @@ def gen_client_find() -> str:
     lines = []
     for i, name in enumerate(finder.keys()):
         lines.append(f'<li><a class="dropdown-item" href="#"><b>{name}</b></a></li>')
-        for (client, number) in finder[name].items():
+        for (client, number) in sorted(finder[name].items(), key=lambda x: x[1]):
             lines.append(f'<li><a class="dropdown-item" href="/{client}">{client}: <span class="badge text-bg-success">{number}</span></a></li>')
         if i < len(finder.keys()) - 1:
             lines.append('''<li><hr class="dropdown-divider"></li>''')
