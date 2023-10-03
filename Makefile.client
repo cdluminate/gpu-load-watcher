@@ -5,7 +5,7 @@ PORT=4222
 
 main:
 	mkdir -p $(SYSTEMD_PATH)
-	systemctl --user stop client
+	systemctl --user stop client || true
 	sed -e "s|@WORKING_DIRECTORY@|$(shell pwd)|g" \
         -e "s|@SERVER_ADDR@|$(SERVER_ADDR)|g" \
         -e "s|@PYTHON3@|$(shell command -v python3)|g" \
