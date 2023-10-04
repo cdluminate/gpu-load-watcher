@@ -15,6 +15,8 @@ import time
 import argparse
 import datetime
 from collections import defaultdict
+import gzip
+import json
 import rich
 console = rich.get_console()
 from flask import Flask, request
@@ -341,7 +343,21 @@ def one_client(client: str):
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    data = request.json
+    #print(vars(request))
+    if 'Content-Type' in request.headers:
+        if request.headers['Content-Type'] != 'application/json':
+            console.log(f'unsupported POST content type')
+            return None
+    else:
+        pass
+    if 'Content-Encoding' in request.headers:
+        if request.headers['Content-Encoding'] == 'gzip':
+            data = gzip.decompress(request.data).decode()
+            data = json.loads(data)
+        else:
+            data = request.json
+    else:
+        data = request.json
     __G__[data['hostname']] = data
     __G_lastsync__[data['hostname']] = time.time()
     # my cloud server does no have much memory
