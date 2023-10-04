@@ -5,7 +5,12 @@ Description=User Mode HTTP Server (uWSGI)
 WorkingDirectory=@WORKING_DIRECTORY@
 ; requires # apt install uwsgi uwsgi-plugin-python3
 ; note, the statistics will be wrong for multi-process mode
-ExecStart=/usr/bin/uwsgi --plugin http,python3 --http 0.0.0.0:@PORT@ -w server:app
+; [1] https://ugu.readthedocs.io/en/latest/compress.html
+ExecStart=/usr/bin/uwsgi --plugin http,python3,transformation_gzip \
+    --http 0.0.0.0:@PORT@ -w server:app \
+    --static-gzip-all --http-auto-gzip \
+    --collect-header 'Content-Type RESPONSE_CONTENT_TYPE' \
+    --response-route-if 'startswith:${RESPONSE_CONTENT_TYPE};text/html addheader:uWSGI-Encoding: gzip'
 Restart=always
 RestartSec=5
 

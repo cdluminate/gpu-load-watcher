@@ -2,7 +2,9 @@
 SYSTEMD_PATH=~/.config/systemd/user/
 PORT=4222
 
-main:
+default: uwsgi
+
+dev:
 	mkdir -p $(SYSTEMD_PATH)
 	systemctl --user stop server || true
 	sed -e "s|@WORKING_DIRECTORY@|$(shell pwd)|g" \
