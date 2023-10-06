@@ -61,7 +61,7 @@ License: MIT/Expat
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Statistics
+            Stat.
           </a>
           <ul class="dropdown-menu">
             @STAT_CLIENTS@
@@ -77,18 +77,10 @@ License: MIT/Expat
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            LeaderBoard
+            User
           </a>
           <ul class="dropdown-menu">
             @USER_CLIENTS@
-          </ul>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            LastSync
-          </a>
-          <ul class="dropdown-menu">
-            @SYNC_CLIENTS@
           </ul>
         </li>
       </ul>
@@ -237,7 +229,11 @@ def gen_client_list() -> str:
     '''
     lines = []
     for client in sorted(__G__.keys()):
-        lines.append(f'<li><a class="dropdown-item" href="/{client}">{client}</a></li>')
+        lastsync = int(time.time() - __G_lastsync__[client])
+        if lastsync <= 60:
+            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: Last Sync <span class="badge text-bg-success">{lastsync}</span> seconds ago</a></li>')
+        else:
+            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: <span class="badge text-bg-danger">{lastsync}</span> seconds ago</a></li>')
     return '\n'.join(lines)
 
 
@@ -333,20 +329,6 @@ def gen_client_user_leaderboard() -> str:
     return '\n'.join(lines)
 
 
-def gen_client_lastsync() -> str:
-    '''
-    generate the navbar dropdown list for lastsync info
-    '''
-    lines= [] 
-    for name in sorted(__G_lastsync__.keys()):
-        lastsync = int(time.time() - __G_lastsync__[name])
-        if lastsync < 60:
-            lines.append(f'<li><a class="dropdown-item" href="/{name}">{name}: <span class="badge text-bg-success">{lastsync}</span> seconds</a></li>')
-        else:
-            lines.append(f'<li><a class="dropdown-item" href="/{name}">{name}: <span class="badge text-bg-danger">{lastsync}</span> seconds</a></li>')
-    return '\n'.join(lines)
-
-
 @app.route('/')
 def root():
     body = '''<br><div class='container'>'''
@@ -357,7 +339,6 @@ def root():
     header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
     header = header.replace('@FIND_CLIENTS@', gen_client_find())
     header = header.replace('@USER_CLIENTS@', gen_client_user_leaderboard())
-    header = header.replace('@SYNC_CLIENTS@', gen_client_lastsync())
     tail = TAIL
     return header + body + tail
 
@@ -380,7 +361,6 @@ def one_client(client: str):
     header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
     header = header.replace('@FIND_CLIENTS@', gen_client_find())
     header = header.replace('@USER_CLIENTS@', gen_client_user_leaderboard())
-    header = header.replace('@SYNC_CLIENTS@', gen_client_lastsync())
     tail = TAIL
     return header + body + tail
 
