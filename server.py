@@ -92,11 +92,11 @@ License: MIT/Expat
           </ul>
         </li>
       </ul>
-    </div>
-    <div class="nav-item">
-        Source Code:
-        <a href="https://github.com/cdluminate/gpu-load-watcher/blob/main/server.py"><span class="badge text-bg-primary">Server</span></a>
-        <a href="https://github.com/cdluminate/gpu-load-watcher/blob/main/client.py"><span class="badge text-bg-primary">Client</span></a>
+      <div class="nav-item">
+          Source Code:
+          <a href="https://github.com/cdluminate/gpu-load-watcher/blob/main/server.py"><span class="badge text-bg-primary">Server</span></a>
+          <a href="https://github.com/cdluminate/gpu-load-watcher/blob/main/client.py"><span class="badge text-bg-primary">Client</span></a>
+      </div>
     </div>
   </div>
 </nav>
