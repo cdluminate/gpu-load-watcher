@@ -231,9 +231,9 @@ def gen_client_list() -> str:
     for client in sorted(__G__.keys()):
         lastsync = int(time.time() - __G_lastsync__[client])
         if lastsync <= 60:
-            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: Last Sync <span class="badge text-bg-success">{lastsync}</span> seconds ago</a></li>')
+            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: Last Sync <span class="badge text-bg-success">{lastsync}</span>s ago</a></li>')
         else:
-            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: <span class="badge text-bg-danger">{lastsync}</span> seconds ago</a></li>')
+            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: Last Sync <span class="badge text-bg-danger">{lastsync}</span>s ago</a></li>')
     return '\n'.join(lines)
 
 
