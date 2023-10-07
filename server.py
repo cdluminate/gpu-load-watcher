@@ -11,6 +11,7 @@ If you want to make this robust, just use Makefile.server to
 install the systemd service unit in the user mode.
 '''
 import gc
+import os
 import time
 import argparse
 import datetime
@@ -20,6 +21,7 @@ import json
 import rich
 console = rich.get_console()
 from flask import Flask, request
+from flask import send_from_directory
 app = Flask(__name__)
 
 HEADER = '''
@@ -35,6 +37,7 @@ License: MIT/Expat
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="refresh" content="7" />
     <title>Mo's GPU Watcher</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
   </head>
   <body>
@@ -387,6 +390,13 @@ def submit():
     # my cloud server does no have much memory
     gc.collect()
     return data
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico',
+                               mimetype='image/vnd.microsoft.icon')
 
 
 if __name__ == '__main__':
