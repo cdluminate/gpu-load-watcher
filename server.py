@@ -349,16 +349,30 @@ def root():
 @app.route('/<string:client>')
 def one_client(client: str):
     body = '''<br><div class='container'>'''
-    if client in __G__:
-        body += html_per_host(__G__[client], __G_lastsync__[client])
+    if ',' in client:
+        clients = client.split(',')
+        for client in clients:
+            if client in __G__:
+                body += html_per_host(__G__[client], __G_lastsync__[client])
+            else:
+                body += f'''
+                <div class="alert alert-danger" role="alert">
+                  The specified client "{client}" does not exist.
+                  Check your URL and try again!
+                  <a href="/">Click here to reset.</a>
+                </div>
+                '''
     else:
-        body += f'''
-        <div class="alert alert-danger" role="alert">
-          The specified client "{client}" does not exist.
-          Check your URL and try again!
-          <a href="/">Click here to reset.</a>
-        </div>
-        '''
+        if client in __G__:
+            body += html_per_host(__G__[client], __G_lastsync__[client])
+        else:
+            body += f'''
+            <div class="alert alert-danger" role="alert">
+              The specified client "{client}" does not exist.
+              Check your URL and try again!
+              <a href="/">Click here to reset.</a>
+            </div>
+            '''
     body += '''</div>'''
     header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
     header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
