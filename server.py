@@ -44,9 +44,9 @@ License: MIT/Expat
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top" style="display: block" id="navbar">
+<nav class="navbar navbar-expand-lg bg-body-tertiary" style="display: block" id="navbar">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/">GPU Status</a>
+    <a class="navbar-brand" href="/">GPUs</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -54,20 +54,18 @@ License: MIT/Expat
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Scope
+            Statistics
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/">All (default)</a></li>
-            <li><hr class="dropdown-divider"></li>
-            @NAV_CLIENTS@
+            @STAT_CLIENTS@
           </ul>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Stat.
+            Scope
           </a>
           <ul class="dropdown-menu">
-            @STAT_CLIENTS@
+            @NAV_CLIENTS@
           </ul>
         </li>
         <li class="nav-item dropdown">
@@ -76,14 +74,6 @@ License: MIT/Expat
           </a>
           <ul class="dropdown-menu">
             @FIND_CLIENTS@
-          </ul>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            User
-          </a>
-          <ul class="dropdown-menu">
-            @USER_CLIENTS@
           </ul>
         </li>
       </ul>
@@ -231,12 +221,16 @@ def gen_client_list() -> str:
     generate the client list for the navbar
     '''
     lines = []
+    lines.append('''<li><a class="dropdown-item" href="/"><b>All</b> (default)</a></li>''')
+    lines.append('''<li><hr class="dropdown-divider"></li>''')
     for client in sorted(__G__.keys()):
         lastsync = int(time.time() - __G_lastsync__[client])
         if lastsync <= 60:
-            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: Last Sync <span class="badge text-bg-success">{lastsync}</span>s ago</a></li>')
+            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: Synced <span class="badge text-bg-success">{lastsync}</span>s ago</a></li>')
         else:
-            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: Last Sync <span class="badge text-bg-danger">{lastsync}</span>s ago</a></li>')
+            lines.append(f'<li><a class="dropdown-item" href="/{client}"><b>{client}</b>: Synced <span class="badge text-bg-danger">{lastsync}</span>s ago</a></li>')
+    lines.append('''<li><hr class="dropdown-divider"></li>''')
+    lines.append('''<li><a class="dropdown-item" href="#"><b>Flex</b>: &lt;URL&gt;/client1,client2,...</a></li>''')
     return '\n'.join(lines)
 
 
@@ -309,6 +303,7 @@ def gen_client_find() -> str:
     return '\n'.join(lines)
 
 
+@app.route('/leaderboard')
 def gen_client_user_leaderboard() -> str:
     '''
     rank users across all clients based on occupied GPU tally
@@ -341,7 +336,6 @@ def root():
     header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
     header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
     header = header.replace('@FIND_CLIENTS@', gen_client_find())
-    header = header.replace('@USER_CLIENTS@', gen_client_user_leaderboard())
     tail = TAIL
     return header + body + tail
 
@@ -377,7 +371,6 @@ def one_client(client: str):
     header = HEADER.replace('@NAV_CLIENTS@', gen_client_list())
     header = header.replace('@STAT_CLIENTS@', gen_client_statistics())
     header = header.replace('@FIND_CLIENTS@', gen_client_find())
-    header = header.replace('@USER_CLIENTS@', gen_client_user_leaderboard())
     tail = TAIL
     return header + body + tail
 
