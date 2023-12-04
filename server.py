@@ -81,6 +81,7 @@ License: MIT/Expat
           Source Code:
           <a href="https://github.com/cdluminate/gpu-load-watcher/blob/main/server.py"><span class="badge text-bg-primary">Server</span></a>
           <a href="https://github.com/cdluminate/gpu-load-watcher/blob/main/client.py"><span class="badge text-bg-primary">Client</span></a>
+          <a href="/leaderboard"><span class="badge text-bg-primary">#</span></a>
       </div>
     </div>
   </div>
